@@ -2,7 +2,11 @@ const path = require('path')
 const express = require('express')
 const hbs = require('hbs')
 
+const geocode = require('./utils/geocode');
+const forecast = require('./utils/forecast')
+
 const app = express();
+const port = process.env.PORT || 3000;
 
 // define paths for express config
 const publicDirectoryPath = path.join(__dirname, '../public')
@@ -42,7 +46,27 @@ app.get('/help', (req, res) => {
 })
 
 app.get('/weather', (req,res) => {
-    res.send('Weather Page')
+    const address = req.query.address
+    if (!address){
+        return res.send({
+            error: 'No Address was introduced'
+        })
+    }
+
+    geocode(address, (error, {latitude, longitude, location } = {}) => {
+        if(error){
+            return res.send({error});
+        }
+    
+        // console.log(data);
+        forecast(longitude, latitude, (error, forecastData) => {
+            if (error) {
+                return res.send({error});
+            }
+
+            res.send({location, forecast: forecastData, address});
+          })
+    })
 })
 
 app.get('/help/*', (req, res) => {
@@ -63,6 +87,6 @@ app.get('*', (req, res) => {
 
 /* Listening to calls */
 
-app.listen(3000, () => {
-    console.log('Server is up on port 3000')
+app.listen(port, () => {
+    console.log('Server is up on port', port)
 })
