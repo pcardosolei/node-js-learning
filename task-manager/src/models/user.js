@@ -91,7 +91,7 @@ userSchema.methods.generateAuthToken = async function () {
     const user = this
 
     // second argument is the secret. should be in a environment variable for safety
-    const token = jwt.sign({ _id: user._id.toString()}, 'thisismynewcourse')
+    const token = jwt.sign({ _id: user._id.toString()}, process.env.JWT_SECRET)
 
     user.tokens = user.tokens.concat({ token })
     await user.save()
